@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Know Your Health - Interactive Medical Awareness Guide</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        .hero {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 4rem 2rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="25" cy="25" r="2" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1.5" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="1" fill="white" opacity="0.1"/><circle cx="10" cy="60" r="1.5" fill="white" opacity="0.1"/><circle cx="90" cy="30" r="1" fill="white" opacity="0.1"/></svg>');
+            animation: float 20s infinite linear;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            100% { transform: translateY(-100px); }
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            animation: fadeInUp 1s ease;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+            animation: fadeInUp 1s ease 0.3s both;
+        }
+
+        .characters {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            margin-top: 2rem;
+            animation: fadeInUp 1s ease 0.6s both;
+        }
+
+        .character {
+            text-align: center;
+            max-width: 200px;
+        }
+
+        .character-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin: 0 auto 1rem;
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .character-avatar:hover {
+            transform: scale(1.1);
+        }
+
+        .maya { background: linear-gradient(45deg, #ff6b6b, #ff8e8e); }
+        .david { background: linear-gradient(45deg, #4ecdc4, #44a08d); }
+        .sarah { background: linear-gradient(45deg, #45b7d1, #96c93d); }
+
+        .character-avatar::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40px;
+            height: 40px;
+            background: white;
+            border-radius: 50%;
+        }
+
+        .maya::after { content: '👩‍💼'; }
+        .david::after { content: '👨‍💼'; }
+        .sarah::after { content: '👩‍🏃'; }
+
+        .character-avatar::after {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 24px;
+        }
+
+        .section {
+            padding: 4rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .condition-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin: 3rem 0;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .condition-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+        }
+
+        .condition-header {
+            padding: 2rem;
+            color: white;
+            position: relative;
+        }
+
+        .hypertension { background: linear-gradient(135deg, #ff6b6b, #ee5a24); }
+        .diabetes { background: linear-gradient(135deg, #feca57, #ff9ff3); }
+        .respiratory { background: linear-gradient(135deg, #48cae4, #023e8a); }
+
+        .condition-header h2 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .condition-content {
+            padding: 2rem;
+        }
+
+        .tab-container {
+            display: flex;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .tab {
+            padding: 1rem 2rem;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .tab.active {
+            color: #667eea;
+        }
+
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .symptoms-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .symptom-card {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+            transition: transform 0.3s ease;
+        }
+
+        .symptom-card:hover {
+            transform: translateX(5px);
+            background: #e3f2fd;
+        }
+
+        .risk-factors {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .risk-factor {
+            background: #fff3cd;
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            border: 2px solid #ffc107;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .risk-factor:hover {
+            background: #ffc107;
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .prevention-list {
+            list-style: none;
+            margin: 1rem 0;
+        }
+
+        .prevention-list li {
+            padding: 1rem;
+            margin: 0.5rem 0;
+            background: #d4edda;
+            border-radius: 10px;
+            border-left: 4px solid #28a745;
+            transition: transform 0.3s ease;
+        }
+
+        .prevention-list li:hover {
+            transform: translateX(10px);
+        }
+
+        .prevention-list li::before {
+            content: '✓';
+            color: #28a745;
+            font-weight: bold;
+            margin-right: 1rem;
+        }
+
+        .health-calculator {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 3rem 2rem;
+            border-radius: 20px;
+            margin: 3rem 0;
+            text-align: center;
+        }
+
+        .calculator-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .calculator-card {
+            background: rgba(255,255,255,0.1);
+            padding: 2rem;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .input-group {
+            margin: 1rem 0;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 0.8rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+        }
+
+        .calculate-btn {
+            background: #28a745;
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 1rem;
+        }
+
+        .calculate-btn:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+
+        .result {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: rgba(255,255,255,0.2);
+            border-radius: 10px;
+            font-weight: 600;
+        }
+
+        .emergency-section {
+            background: #dc3545;
+            color: white;
+            padding: 3rem 2rem;
+            text-align: center;
+            margin: 3rem 0;
+            border-radius: 20px;
+        }
+
+        .emergency-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .emergency-card {
+            background: rgba(255,255,255,0.1);
+            padding: 2rem;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .cta-section {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            padding: 4rem 2rem;
+            text-align: center;
+            margin-top: 4rem;
+        }
+
+        .cta-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .cta-button {
+            padding: 1rem 2rem;
+            background: white;
+            color: #28a745;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2rem; }
+            .characters { flex-direction: column; gap: 1rem; }
+            .calculator-grid { grid-template-columns: 1fr; }
+            .cta-buttons { flex-direction: column; align-items: center; }
+        }
+    </style>
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self';">
+</head>
+<body>
+    <section class="hero">
+        <h1>Know Your Health</h1>
+        <p>An Interactive Guide to Common Medical Conditions</p>
+        <div class="characters">
+            <div class="character">
+                <div class="character-avatar maya"></div>
+                <h3>Maya</h3>
+                <p>Busy working mom experiencing fatigue and frequent thirst</p>
+            </div>
+            <div class="character">
+                <div class="character-avatar david"></div>
+                <h3>David</h3>
+                <p>Office worker with high blood pressure concerns</p>
+            </div>
+            <div class="character">
+                <div class="character-avatar sarah"></div>
+                <h3>Sarah</h3>
+                <p>Fitness enthusiast dealing with a persistent cough</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="condition-card">
+            <div class="condition-header hypertension">
+                <h2>Hypertension</h2>
+                <p>The "Silent Killer" - Often without symptoms</p>
+            </div>
+            <div class="condition-content">
+                <div class="tab-container">
+                    <button class="tab active" onclick="showTab('hyp-symptoms')">Symptoms</button>
+                    <button class="tab" onclick="showTab('hyp-risks')">Risk Factors</button>
+                    <button class="tab" onclick="showTab('hyp-prevention')">Prevention</button>
+                    <button class="tab" onclick="showTab('hyp-treatment')">Treatment</button>
+                </div>
+
+                <div id="hyp-symptoms" class="tab-content active">
+                    <h3>Warning Signs</h3>
+                    <div class="symptoms-grid">
+                        <div class="symptom-card">
+                            <h4>🤕 Headaches</h4>
+                            <p>Severe, persistent headaches that don't respond to typical treatments</p>
+                        </div>
+                        <div class="symptom-card">
+                            <h4>💓 Heart Palpitations</h4>
+                            <p>Irregular or rapid heartbeat, especially during rest</p>
+                        </div>
+                        <div class="symptom-card">
+                            <h4>😵 Dizziness</h4>
+                            <p>Frequent dizzy spells or feeling lightheaded</p>
+                        </div>
+                        <div class="symptom-card">
+                            <h4>👁️ Vision Changes</h4>
+                            <p>Blurred vision or seeing spots</p>
+                        </div>
+                    </div>
+                    <p><strong>Important:</strong> High blood pressure often has NO symptoms, which is why regular monitoring is crucial.</p>
+                </div>
+
+                <div id="hyp-risks" class="tab-content">
+                    <h3>Risk Factors</h3>
+                    <div class="risk-factors">
+                        <div class="risk-factor">Age (45+ men, 65+ women)</div>
+                        <div class="risk-factor">Family History</div>
+                        <div class="risk-factor">Excess Weight</div>
+                        <div class="risk-factor">Lack of Exercise</div>
+                        <div class="risk-factor">High Sodium Diet</div>
+                        <div class="risk-factor">Excessive Alcohol</div>
+                        <div class="risk-factor">Chronic Stress</div>
+                        <div class="risk-factor">Smoking</div>
+                    </div>
+                    <p><strong>Target Blood Pressure:</strong> Less than 120/80 mmHg</p>
+                </div>
+
+                <div id="hyp-prevention" class="tab-content">
+                    <h3>Prevention Strategies</h3>
+                    <ul class="prevention-list">
+                        <li><strong>DASH Diet:</strong> Rich in fruits, vegetables, whole grains, lean proteins</li>
+                        <li><strong>Reduce Sodium:</strong> Less than 2,300mg daily (1 teaspoon of salt)</li>
+                        <li><strong>Exercise Regularly:</strong> 150 minutes of moderate activity weekly</li>
+                        <li><strong>Maintain Healthy Weight:</strong> Even 5-10 pounds can make a difference</li>
+                        <li><strong>Limit Alcohol:</strong> No more than 2 drinks daily for men, 1 for women</li>
+                        <li><strong>Manage Stress:</strong> Deep breathing, meditation, yoga</li>
+                        <li><strong>Don't Smoke:</strong> Smoking immediately raises blood pressure</li>
+                    </ul>
+                </div>
+
+                <div id="hyp-treatment" class="tab-content">
+                    <h3>Treatment Options</h3>
+                    <p>Treatment typically combines lifestyle modifications with medication when necessary:</p>
+                    <ul class="prevention-list">
+                        <li><strong>ACE Inhibitors:</strong> Help relax blood vessels</li>
+                        <li><strong>Diuretics:</strong> Help remove excess sodium and water</li>
+                        <li><strong>Calcium Channel Blockers:</strong> Prevent calcium from entering heart cells</li>
+                        <li><strong>Beta Blockers:</strong> Reduce heart rate and cardiac output</li>
+                    </ul>
+                    <p><em>Always consult your healthcare provider for personalized treatment plans.</em></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="condition-card">
+            <div class="condition-header diabetes">
+                <h2>Diabetes</h2>
+                <p>When your body can't properly use or produce insulin</p>
+            </div>
+            <div class="condition-content">
+                <div class="tab-container">
+                    <button class="tab active" onclick="showTab('dia-symptoms')">Symptoms</button>
+                    <button class="tab" onclick="showTab('dia-risks')">Risk Factors</button>
+                    <button class="tab" onclick="showTab('dia-prevention')">Prevention</button>
+                    <button class="tab" onclick="showTab('dia-treatment')">Management</button>
+                </div>
+
+                <div id="dia-symptoms" class="tab-content active">
+                    <h3>Common Symptoms</h3>
+                    <div class="symptoms-grid">
+                        <div class="symptom-card">
+                            <h4>🚰 Frequent Urination</h4>
+                            <p>Needing to urinate more often, especially at night</p>
+                        </div>
+                        <div class="symptom-card">
+                            <h4>🥤 Excessive Thirst</h4>
+                            <p>Feeling constantly thirsty despite drinking fluids</p>
+                        </div>
+                        <div class="symptom-card">
+                            <h4>⚖️ Unexplained Weight Loss</h4>
+                            <p>Losing weight without trying, despite eating normally</p>
+                        </div>
+                        <div class="symptom-card">
+                            <h4>😴 Extreme Fatigue</h4>
+                            <p>Feeling tired and weak throughout the day</p>
+                        </div>
+                        <div class="symptom-card">
+                            <h4>👁️ Blurred Vision</h4>
+                            <p>Vision problems or seeing halos around lights</p>
+                        </div>
+                        <div class="symptom-card">
+                            <h4>🩹 Slow Healing</h4>
+                            <p>Cuts and bruises that heal slowly or frequently infected</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="dia-risks" class="tab-content">
+                    <h3>Risk Factors</h3>
+                    <div class="risk-factors">
+                        <div class="risk-factor">Age 45 or older</div>
+                        <div class="risk-factor">Family History</div>
+                        <div class="risk-factor">Overweight/Obesity</div>
+                        <div class="risk-factor">Physical Inactivity</div>
+                        <div class="risk-factor">Gestational Diabetes History</div>
+                        <div class="risk-factor">Prediabetes</div>
+                        <div class="risk-factor">High Blood Pressure</div>
+                        <div class="risk-factor">Certain Ethnicities</div>
+                    </div>
+                    <p><strong>A1C Test Levels:</strong></p>
+                    <ul>
+                        <li>Normal: Below 5.7%</li>
+                        <li>Prediabetes: 5.7% - 6.4%</li>
+                        <li>Diabetes: 6.5% or higher</li>
+                    </ul>
+                </div>
+
+                <div id="dia-prevention" class="tab-content">
+                    <h3>Prevention & Management</h3>
+                    <ul class="prevention-list">
+                        <li><strong>Choose Whole Grains:</strong> Brown rice, quinoa, whole wheat bread</li>
+                        <li><strong>Fill Half Your Plate:</strong> With non-starchy vegetables</li>
+                        <li><strong>Include Lean Proteins:</strong> Fish, chicken, beans, tofu</li>
+                        <li><strong>Monitor Portion Sizes:</strong> Use the plate method for balanced meals</li>
+                        <li><strong>Limit Sugary Drinks:</strong> Choose water, unsweetened tea, or coffee</li>
+                        <li><strong>Exercise Regularly:</strong> 150 minutes of moderate activity weekly</li>
+                        <li><strong>Maintain Healthy Weight:</strong> Even modest weight loss helps</li>
+                    </ul>
+                </div>
+
+                <div id="dia-treatment" class="tab-content">
+                    <h3>Management Strategies</h3>
+                    <ul class="prevention-list">
+                        <li><strong>Blood Sugar Monitoring:</strong> Regular checks as recommended by doctor</li>
+                        <li><strong>Medication Adherence:</strong> Take prescribed medications as directed</li>
+                        <li><strong>Annual Eye Exams:</strong> Detect diabetic retinopathy early</li>
+                        <li><strong>Foot Care:</strong> Daily inspection and proper hygiene</li>
+                        <li><strong>Blood Pressure Monitoring:</strong> Keep below 140/90 mmHg</li>
+                        <li><strong>Cholesterol Management:</strong> Regular lipid panel tests</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="condition-card">
+            <div class="condition-header respiratory">
+                <h2>Respiratory Infections</h2>
+                <p>Infections affecting your airways and lungs</p>
+            </div>
+            <div class="condition-content">
+                <div class="tab-container">
+                    <button class="tab active" onclick="showTab('res-symptoms')">Symptoms</button>
+                    <button class="tab" onclick="showTab('res-types')">Types</button>
+                    <button class="tab" onclick="showTab('res-prevention')">Prevention</button>
+                    <button class="tab" onclick="showTab('res-treatment')">Treatment</button>
+                </div>
+
+                <div id="res-symptoms" class="tab-content active">
+                    <h3>Symptoms to Watch For</h3>
+                    <div class="symptoms-grid">
+                        <div class="symptom-card">
+                            <h4>🤧 Runny/Stuffy Nose</h4>
+                            <p>Nasal congestion or discharge</p>
+                        </div>
+                        <div class="symptom-card">
+                            <h4>😷 Sore Throat</h4>
+                            <p>Pain or scratchy feeling in throat</p>
+                        </div>
+                        <div class="symptom-card">
+                            <h4>🗣️ Cough</h4>
+                            <p>Dry or productive cough</p>
+                        </div>
+                        <div class="symptom-card">
+                            <h4>🌡️ Fever</h4>
+                            <p>Body temperature above 100.4°F (38°C)</p>
+                        </div>
+                        <div class="symptom-card">
+                            <h4>💨 Shortness of Breath</h4>
+                            <p>Difficulty breathing or wheezing</p>
+                        </div>
+                        <div class="symptom-card">
+                            <h4>💪 Body Aches</h4>
+                            <p>Muscle pain and general discomfort</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="res-types" class="tab-content">
+                    <h3>Common Types</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+                        <div style="padding: 1.5rem; background: #f8f9fa; border-radius: 10px;">
+                            <h4>Upper Respiratory Infections</h4>
+                            <ul style="margin-top: 1rem;">
+                                <li>Common Cold</li>
+                                <li>Sinusitis</li>
+                                <li>Pharyngitis (Sore Throat)</li>
+                                <li>Laryngitis</li>
+                            </ul>
+                        </div>
+                        <div style="padding: 1.5rem; background: #e3f2fd; border-radius: 10px;">
+                            <h4>Lower Respiratory Infections</h4>
+                            <ul style="margin-top: 1rem;">
+                                <li>Bronchitis</li>
+                                <li>Pneumonia</li>
+                                <li>Influenza</li>
+                                <li>COVID-19</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="res-prevention" class="tab-content">
+                    <h3>Prevention Strategies</h3>
+                    <ul class="prevention-list">
+                        <li><strong>Hand Hygiene:</strong> Wash hands frequently for 20 seconds with soap</li>
+                        <li><strong>Avoid Close Contact:</strong> Stay away from sick individuals when possible</li>
+                        <li><strong>Don't Touch Face:</strong> Avoid touching eyes, nose, and mouth with unwashed hands</li>
+                        <li><strong>Get Vaccinated:</strong> Annual flu shot and stay up-to-date with COVID-19 boosters</li>
+                        <li><strong>Maintain Healthy Lifestyle:</strong> Good nutrition, adequate sleep, regular exercise</li>
+                        <li><strong>Cover Coughs/Sneezes:</strong> Use your elbow, not your hands</li>
+                        <li><strong>Clean Surfaces:</strong> Regularly disinfect frequently touched objects</li>
+                    </ul>
+                </div>
+
+                <div id="res-treatment" class="tab-content">
+                    <h3>Treatment Options</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+                        <div style="padding: 1.5rem; background: #d4edda; border-radius: 10px;">
+                            <h4>Viral Infections</h4>
+                            <ul style="margin-top: 1rem;">
+                                <li>Rest and plenty of fluids</li>
+                                <li>Over-the-counter symptom relief</li>
+                                <li>Antiviral medications (if prescribed early)</li>
+                                <li>Symptom management</li>
+                            </ul>
+                        </div>
+                        <div style="padding: 1.5rem; background: #fff3cd; border-radius: 10px;">
+                            <h4>Bacterial Infections</h4>
+                            <ul style="margin-top: 1rem;">
+                                <li>Antibiotics (only when prescribed)</li>
+                                <li>Complete full course of treatment</li>
+                                <li>Supportive care</li>
+                                <li>Follow-up with healthcare provider</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="health-calculator">
+        <h2>Health Calculators</h2>
+        <p>Quick tools to assess your health metrics</p>
+        <div class="calculator-grid">
+            <div class="calculator-card">
+                <h3>BMI Calculator</h3>
+                <div class="input-group">
+                    <label>Height (cm):</label>
+                    <input type="number" id="height" placeholder="170">
+                </div>
+                <div class="input-group">
+                    <label>Weight (kg):</label>
+                    <input type="number" id="weight" placeholder="70">
+                </div>
+                <button class="calculate-btn" onclick="calculateBMI()">Calculate BMI</button>
+                <div class="result" id="bmi-result"></div>
+            </div>
+            
+            <div class="calculator-card">
+                <h3>Blood Pressure Tracker</h3>
+                <div class="input-group">
+                    <label>Systolic (top number):</label>
+                    <input type="number" id="systolic" placeholder="120">
+                </div>
+                <div class="input-group">
+                    <label>Diastolic (bottom number):</label>
+                    <input type="number" id="diastolic" placeholder="80">
+                </div>
+                <button class="calculate-btn" onclick="checkBP()">Check Blood Pressure</button>
+                <div class="result" id="bp-result"></div>
+            </div>
+        </div>
+    </section>
+
+    <section class="emergency-section">
+        <h2>🚨 When to Seek Emergency Care</h2>
+        <p>Call 911 or go to the emergency room immediately if you experience:</p>
+        <div class="emergency-grid">
+            <div class="emergency-card">
+                <h3>Chest Pain</h3>
+                <p>Severe chest pain, pressure, or tightness that may signal a heart attack</p>
+            </div>
+            <div class="emergency-card">
+                <h3>Difficulty Breathing</h3>
+                <p>Severe shortness of breath or inability to catch your breath</p>
+            </div>
+            <div class="emergency-card">
+                <h3>High Fever</h3>
+                <p>Fever over 103°F (39.4°C) or fever with severe symptoms</p>
+            </div>
+            <div class="emergency-card">
+                <h3>Severe Headache</h3>
+                <p>Sudden, severe headache unlike any you've experienced before</p>
+            </div>
+            <div class="emergency-card">
+                <h3>Vision Changes</h3>
+                <p>Sudden loss of vision, double vision, or severe eye pain</p>
+            </div>
+            <div class="emergency-card">
+                <h3>Neurological Signs</h3>
+                <p>Confusion, difficulty speaking, weakness, or loss of coordination</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="cta-section">
+        <h2>Take Action for Your Health Today</h2>
+        <p>Early detection and prevention are your best tools for maintaining good health</p>
+        <div class="cta-buttons">
+            <a href="#" class="cta-button">Schedule a Check-up</a>
+            <a href="#" class="cta-button">Find a Doctor</a>
+            <a href="#" class="cta-button">Health Resources</a>
+            <a href="#" class="cta-button">Emergency Contacts</a>
+        </div>
+        <p style="margin-top: 2rem; opacity: 0.9;">
+            <strong>Remember:</strong> This information is for educational purposes only and does not replace professional medical advice. 
+            Always consult with your healthcare provider for personalized medical guidance.
+        </p>
+    </section>
+
+    <script>
+        function showTab(tabId) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            document.getElementById(tabId).classList.add('active');
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+        }
+
+        function calculateBMI() {
+            const height = parseFloat(document.getElementById('height').value);
+            const weight = parseFloat(document.getElementById('weight').value);
+            
+            if (height && weight) {
+                const bmi = (weight / ((height / 100) ** 2)).toFixed(1);
+                let category = '';
+                let color = '';
+                
+                if (bmi < 18.5) {
+                    category = 'Underweight';
+                    color = '#17a2b8';
+                } else if (bmi < 25) {
+                    category = 'Normal weight';
+                    color = '#28a745';
+                } else if (bmi < 30) {
+                    category = 'Overweight';
+                    color = '#ffc107';
+                } else {
+                    category = 'Obese';
+                    color = '#dc3545';
+                }
+                
+                document.getElementById('bmi-result').innerHTML = 
+                    `<div style="color: ${color};">Your BMI: ${bmi} (${category})</div>
+                     <small>Normal BMI range: 18.5 - 24.9</small>`;
+            } else {
+                document.getElementById('bmi-result').innerHTML = 
+                    '<div style="color: #dc3545;">Please enter valid height and weight values</div>';
+            }
+        }
+
+        function checkBP() {
+            const systolic = parseInt(document.getElementById('systolic').value);
+            const diastolic = parseInt(document.getElementById('diastolic').value);
+            
+            if (systolic && diastolic) {
+                let category = '';
+                let color = '';
+                let advice = '';
+                
+                if (systolic < 120 && diastolic < 80) {
+                    category = 'Normal';
+                    color = '#28a745';
+                    advice = 'Keep up the good work!';
+                } else if (systolic < 130 && diastolic < 80) {
+                    category = 'Elevated';
+                    color = '#ffc107';
+                    advice = 'Focus on lifestyle changes';
+                } else if (systolic < 140 || diastolic < 90) {
+                    category = 'High Blood Pressure Stage 1';
+                    color = '#fd7e14';
+                    advice = 'Consult your doctor about treatment';
+                } else if (systolic < 180 && diastolic < 120) {
+                    category = 'High Blood Pressure Stage 2';
+                    color = '#dc3545';
+                    advice = 'See your doctor soon for treatment';
+                } else {
+                    category = 'Hypertensive Crisis';
+                    color = '#721c24';
+                    advice = 'Seek emergency medical care immediately!';
+                }
+                
+                document.getElementById('bp-result').innerHTML = 
+                    `<div style="color: ${color};">
+                        ${systolic}/${diastolic} mmHg - ${category}
+                     </div>
+                     <small>${advice}</small>`;
+            } else {
+                document.getElementById('bp-result').innerHTML = 
+                    '<div style="color: #dc3545;">Please enter valid blood pressure values</div>';
+            }
+        }
+
+        // Add smooth scrolling for character avatars
+        document.querySelectorAll('.character-avatar').forEach(avatar => {
+            avatar.addEventListener('click', function() {
+                const conditions = document.querySelector('.condition-card');
+                conditions.scrollIntoView({ behavior: 'smooth' });
+            });
+        });
+
+        // Add animation on scroll
+        function animateOnScroll() {
+            const elements = document.querySelectorAll('.condition-card, .health-calculator, .emergency-section');
+            elements.forEach(element => {
+                const elementTop = element.getBoundingClientRect().top;
+                const elementVisible = 150;
+                
+                if (elementTop < window.innerHeight - elementVisible) {
+                    element.style.opacity = '1';
+                    element.style.transform = 'translateY(0)';
+                }
+            });
+        }
+
+        // Initialize animations
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set initial state for animated elements
+            const elements = document.querySelectorAll('.condition-card, .health-calculator, .emergency-section');
+            elements.forEach(element => {
+                element.style.opacity = '0';
+                element.style.transform = 'translateY(30px)';
+                element.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            });
+            
+            // Trigger animation check
+            animateOnScroll();
+            window.addEventListener('scroll', animateOnScroll);
+        });
+
+        // Add interactive hover effects for character avatars
+        document.querySelectorAll('.character').forEach(character => {
+            character.addEventListener('mouseenter', function() {
+                const avatar = this.querySelector('.character-avatar');
+                avatar.style.transform = 'scale(1.1) rotate(5deg)';
+            });
+            
+            character.addEventListener('mouseleave', function() {
+                const avatar = this.querySelector('.character-avatar');
+                avatar.style.transform = 'scale(1) rotate(0deg)';
+            });
+        });
+    </script>
+
+<footer style="padding:1rem;text-align:center;font-size:0.9rem;color:#666;background:#f8f9fa;">
+    <p><em>Disclaimer: This educational page provides general information only and is not a substitute for professional medical advice.</em></p>
+</footer>
+
+</body>
+</html>
